@@ -1,0 +1,7 @@
+/venv
+/text2vec-base-chinese
+/__pycache__/*
+/configs/__pycache__
+/tools/__pycache__
+/test/__pycache__
+.DS_Store

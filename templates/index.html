@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单前端服务</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        input {
+            padding: 10px;
+            width: 300px;
+            margin-bottom: 10px; /* 调整间距 */
+        }
+        button {
+            padding: 10px 20px;
+            margin-bottom: 20px; /* 调整按钮间距 */
+        }
+        button:disabled {
+            background-color: #ccc; /* 禁用状态的背景色 */
+            cursor: not-allowed; /* 禁用状态的光标样式 */
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            width: 300px;
+            min-height: 50px;
+        }
+        .prompt-info {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px; /* 添加上边距 */
+        }
+        #loading {
+            display: none; /* 默认隐藏 */
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>学情大模型-聊天机器人-无敌青春版</h1>
+    <input type="text" id="input" placeholder="输入问题">
+   
+    <div class="prompt-info">
+        你可尝试问以下问题，如
+        xxx作业正确率是多少？
+        xxx这次成绩是多少？
+        xxx作业有没有用心？
+    </div>
+    <div class="prompt-info">
+        # 角色<br>
+        你是一个很有用的助手，可以根据数据库返回的内容问题进行回答。<br>
+        
+        # 目标<br>
+        你会收到一系列的问题，你需要通过现有工具来完成问题的回答。<br>
+        请严格按照任务步骤来执行，如果通过工具不能获取的信息，则回答不清楚。<br>
+        
+        # 任务步骤<br>
+        1. 根据问题内容使用现有工具去获取对应的信息<br>
+        2. 获取信息后，组织内容，尽可能使用教师与学生交流的语气进行回答，并根据现有内容给予一定建议。你可以从以下角度去尝试根据现有的数据进行分析<br>
+        2.1 数据之间的比较<br>
+        2.2 可以对同类数据中较低的值进行强调要提升<br>
+        2.3 可以对较低的值进行鼓励<br>
+        
+        # 注意事项<br>
+        1. 只需要输出回答的内容，不能输出中间步骤生成的任一内容，如搜索数据库的sql语句等<br>
+        2. 请严格根据数据库返回的内容组织回答，不能自行添加或修改任何内容，如考试名字等<br>
+    </div>
+    <button id="submit">提交</button>
+    <div class="loading" id="loading">等待中...</div> <!-- 加载指示器 -->
+    <div id="output"></div>
+
+    <script>
+        // 设置默认的 prompt 值为变量
+        const defaultPromptValue = "你是一个很有用的助手，可以根据数据库返回的内容问题进行回答。"
+        + "你会收到一系列的问题，你需要通过现有工具来完成问题的回答。"
+        + "请严格按照任务步骤来执行，如果通过工具不能获取的信息，则回答不清楚。"
+        + "1. 根据问题内容使用现有工具去获取对应的信息。"
+        + "2. 获取信息后，组织内容，尽可能使用教师与学生交流的语气进行回答，并根据现有内容给予一定建议。你可以从以下角度去尝试根据现有的数据进行分析："
+        + "  2.1 数据之间的比较。"
+        + "  2.2 可以对同类数据中较低的值进行强调要提升。"
+        + "  2.3 可以对较低的值进行鼓励。"
+        + "注意事项："
+        + "  1. 只需要输出回答的内容，不能输出中间步骤生成的任一内容，如搜索数据库的sql语句等。"
+        + "  2. 请严格根据数据库返回的内容组织回答，不能自行添加或修改任何内容，如考试名字等。";
+
+        document.getElementById('submit').addEventListener('click', async function() {
+            const input = document.getElementById('input').value;
+            const prompt = document.getElementById('prompt').value || defaultPromptValue; // 使用变量作为默认值
+            
+            // 显示加载指示器
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('output').innerText = ''; // 清空之前的输出
+            
+            // 禁用提交按钮
+            const submitButton = document.getElementById('submit');
+            submitButton.disabled = true;
+
+            // 向后端发送请求
+            try {
+                const response = await fetch('http://47.106.12.7:5010/api/learning_llm_chatbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ input, prompt }) // 发送输入内容和 prompt
+                });
+
+                const result = await response.json();
+                document.getElementById('output').innerText = result.output; // 显示返回结果
+            } catch (error) {
+                document.getElementById('output').innerText = '请求失败，请重试。';
+            } finally {
+                // 隐藏加载指示器
+                document.getElementById('loading').style.display = 'none';
+                // 重新启用提交按钮
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
